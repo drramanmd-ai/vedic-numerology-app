@@ -12,6 +12,34 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# --- LOGIN SCREEN LOGIC ---
+if "authenticated" not in st.session_state:
+    st.session_state["authenticated"] = False
+
+if not st.session_state["authenticated"]:
+    # Center the login box
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.title("🔒 Login Required")
+        st.write("Please enter your credentials to access the Numerology Dashboard.")
+        
+        with st.form("login_form"):
+            user_id = st.text_input("User ID")
+            password = st.text_input("Password", type="password")
+            submitted = st.form_submit_button("Login")
+            
+            if submitted:
+                # CHANGE YOUR USERNAME AND PASSWORD HERE
+                if user_id == "drraman" and password == "numero369":
+                    st.session_state["authenticated"] = True
+                    st.rerun()
+                else:
+                    st.error("❌ Incorrect User ID or Password")
+    
+    # st.stop() prevents the rest of the app from running if not logged in
+    st.stop()
+# --------------------------
+
 # Custom CSS for modern styling
 st.markdown("""
 <style>
