@@ -30,7 +30,7 @@ if not st.session_state["authenticated"]:
             
             if submitted:
                 # CHANGE YOUR USERNAME AND PASSWORD HERE
-                if user_id == "drraman" and password == "numero369":
+                if user_id == "drraman" and password == "Paracetamol369":
                     st.session_state["authenticated"] = True
                     st.rerun()
                 else:
