@@ -721,19 +721,21 @@ def generate_yearly_pdf(name, dob_str, year, maha, antar, year_counts, pratyanta
         draw_grid_at_xy(pdf, 15, grid_y, praty_counts, maha=maha, antar=antar, pratyantar=p_planet, root=root, destiny=destiny)
         
         # Observation text beside the grid
-        obs = pred_engine.generate_monthly_observation(maha, antar, p_planet, praty_counts, root, destiny)
+        obs = pred_engine.generate_monthly_observation(maha, antar, p_planet, praty_counts, root, destiny, natal_counts)
         
         text_x = 65
         pdf.set_xy(text_x, grid_y)
         
-        m_status = pred_engine.get_planet_status(maha, destiny, praty_counts)
-        a_status = pred_engine.get_planet_status(antar, destiny, praty_counts)
-        p_status = pred_engine.get_planet_status(p_planet, destiny, praty_counts)
+        m_status = pred_engine.get_planet_status(maha, destiny, praty_counts, natal_counts)
+        a_status = pred_engine.get_planet_status(antar, destiny, praty_counts, natal_counts)
+        p_status = pred_engine.get_planet_status(p_planet, destiny, praty_counts, natal_counts)
         
+        def _is_pos(s): return s in ["Positive", "Super Positive"]
         syn_label = "Mixed Phase"
         syn_color = (217, 119, 6) # Orange
-        if m_status == "Positive" and a_status == "Positive" and p_status == "Positive":
-            syn_label = "Golden Month (Triple Positive Synergy)"
+        if _is_pos(m_status) and _is_pos(a_status) and _is_pos(p_status):
+            has_sp = any(x == "Super Positive" for x in [m_status, a_status, p_status])
+            syn_label = "Golden Month (Triple Positive Synergy)" + (" - Super Positive 1!" if has_sp else "")
             syn_color = (22, 163, 74) # Green
         elif m_status == "Negative" and a_status == "Negative" and p_status == "Negative":
             syn_label = "Caution Month (Triple Negative Synergy)"
