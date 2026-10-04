@@ -355,8 +355,12 @@ def evaluate_matchmaking(boy_dob, girl_dob):
         # Boy's yearly dasha grid
         b_maha_planet = None
         b_dashas = get_mahadashas(boy_dob, b_root)
+        try:
+            b_ref = date(yr, boy_dob.month, boy_dob.day)
+        except ValueError:
+            b_ref = date(yr, boy_dob.month, 28)
         for dasha in b_dashas:
-            if dasha["start_date"].year <= yr <= dasha["end_date"].year:
+            if dasha["start_date"] <= b_ref <= dasha["end_date"]:
                 b_maha_planet = dasha["planet"]
                 break
         b_antar_planet = get_antardasha(boy_dob, yr, b_root)
@@ -367,8 +371,12 @@ def evaluate_matchmaking(boy_dob, girl_dob):
         # Girl's yearly dasha grid
         g_maha_planet = None
         g_dashas = get_mahadashas(girl_dob, g_root)
+        try:
+            g_ref = date(yr, girl_dob.month, girl_dob.day)
+        except ValueError:
+            g_ref = date(yr, girl_dob.month, 28)
         for dasha in g_dashas:
-            if dasha["start_date"].year <= yr <= dasha["end_date"].year:
+            if dasha["start_date"] <= g_ref <= dasha["end_date"]:
                 g_maha_planet = dasha["planet"]
                 break
         g_antar_planet = get_antardasha(girl_dob, yr, g_root)
