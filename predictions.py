@@ -574,7 +574,7 @@ PLANET_CAUTIONS = {
     9: "Control temper and aggression. Avoid risky adventures."
 }
 
-def generate_monthly_observation(maha, antar, pratyantar, grid_counts, root, destiny):
+def generate_monthly_observation(maha, antar, pratyantar, grid_counts, root, destiny, natal_counts=None):
     """Generate a concise observation for a Pratyantardasha period with notes-based reasoning."""
     p_name = PLANET_NAMES.get(pratyantar, str(pratyantar))
     m_name = PLANET_NAMES.get(maha, str(maha))
@@ -667,15 +667,21 @@ def generate_monthly_observation(maha, antar, pratyantar, grid_counts, root, des
             reason = "Moon is absent in this phase grid."
             
     elif pratyantar == 1:  # Sun
+        natal_1 = natal_counts.get(1, 0) if natal_counts else strength
         if strength > 1:
             if destiny == 1:
                 intensity = "Strong & Dominant"
                 reason = "Multiple 1s with Destiny 1 manifold increases solar authority and king-like life, though warning against dictatorial tendencies."
+            elif natal_1 == 1:
+                # Natal had single (positive) 1; dasha activated 1 on top → Super Positive
+                intensity = "Super Positive 1"
+                reason = "Your natal has a single positive 1. The dasha activation of 1 boosts this to a Super Positive phase - exceptional leadership, authority, name/fame, and king-like recognition are activated."
             else:
-                intensity = "Unbalanced Authority"
-                reason = "Multiple 1s without Destiny 1 causes lack of confidence, short temper, and reduced leadership."
+                # Natal already had multiple 1s (negative base); dasha adds more → intensifies negativity
+                intensity = "Severely Unbalanced (More Negative)"
+                reason = "Natal grid already had multiple 1s (negative state). The dasha activation of 1 intensifies ego, overconfidence, short temper, and significantly reduces leadership quality."
         elif strength == 1:
-            intensity = "Moderate"
+            intensity = "Moderate / Positive"
             reason = "Single 1 brings standard leadership, independence, and name/fame."
         else:
             intensity = "Weak"
@@ -751,7 +757,7 @@ def generate_monthly_observation(maha, antar, pratyantar, grid_counts, root, des
     
     return obs
 
-def get_planet_status(planet, destiny, counts):
+def get_planet_status(planet, destiny, counts, natal_counts=None):
     """Determines whether a planet acts as Positive, Negative, or Neutral in this chart context."""
     if not planet:
         return "Neutral"
@@ -768,7 +774,15 @@ def get_planet_status(planet, destiny, counts):
     elif planet in [8]:
         return "Positive" if cnt % 2 == 0 else "Negative"
     elif planet in [1]:
-        return "Negative" if cnt > 1 else "Positive"
+        if cnt > 1:
+            if destiny == 1:
+                return "Positive"  # D1 with multiple 1s still strong/dominant
+            natal_1 = natal_counts.get(1, 0) if natal_counts else cnt
+            if natal_1 == 1:
+                return "Super Positive"  # Natal single 1 + dasha activates 1 = Super Positive
+            else:
+                return "Negative"  # Natal already had multiple 1s = More Negative
+        return "Positive"
     elif planet in [4]:
         return "Positive" if cnt % 2 == 0 else "Negative"
     elif planet in [9]:
@@ -804,11 +818,15 @@ def analyze_yearly_dasha(root, destiny, natal_counts, maha, antar, yr_counts):
         analysis["overall"] += "EXCEPTION: As a Destiny 6 native, the activation of Mahadasha/Antardasha of 6 is SUPER POSITIVE, multiplying your luxury, name, and standard of living exponentially. "
         
     # Synergy calculation
-    m_status = get_planet_status(maha, destiny, yr_counts)
-    a_status = get_planet_status(antar, destiny, yr_counts)
+    m_status = get_planet_status(maha, destiny, yr_counts, natal_counts)
+    a_status = get_planet_status(antar, destiny, yr_counts, natal_counts)
     
-    if m_status == "Positive" and a_status == "Positive":
-        analysis["synergy_label"] = "Double Positive (Golden Synergy)"
+    def is_positive(status):
+        return status in ["Positive", "Super Positive"]
+    
+    if is_positive(m_status) and is_positive(a_status):
+        sp_note = " (Super Positive 1 active!)" if m_status == "Super Positive" or a_status == "Super Positive" else ""
+        analysis["synergy_label"] = f"Double Positive (Golden Synergy){sp_note}"
         analysis["synergy_desc"] = f"Both Mahadasha ({m_name}) and Antardasha ({a_name}) are positive in this year's grid. This triggers a highly progressive phase for career growth, financial expansion, and creative achievements."
     elif m_status == "Negative" and a_status == "Negative":
         analysis["synergy_label"] = "Double Negative (Conflict Synergy)"
