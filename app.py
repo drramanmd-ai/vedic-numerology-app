@@ -30,7 +30,7 @@ if not st.session_state["authenticated"]:
             
             if submitted:
                 # CHANGE YOUR USERNAME AND PASSWORD HERE
-                if user_id == "drraman" and password == "Paracetamol369":
+                if user_id == "drraman" and password == "numero369":
                     st.session_state["authenticated"] = True
                     st.rerun()
                 else:
@@ -486,8 +486,12 @@ with tab2:
             for yr in range(from_yr, to_yr + 1):
                 # active Mahadasha
                 active_maha = None
+                try:
+                    ref_date = date(yr, dob.month, dob.day)
+                except ValueError:
+                    ref_date = date(yr, dob.month, 28)  # Feb 29 fallback
                 for dasha in mahadashas:
-                    if dasha["start_date"].year <= yr <= dasha["end_date"].year:
+                    if dasha["start_date"] <= ref_date <= dasha["end_date"]:
                         active_maha = dasha["planet"]
                         break
                         
@@ -602,15 +606,17 @@ with tab2:
                                     st.markdown(render_grid_html(praty_counts, maha=active_maha, antar=active_antar, pratyantar=p_planet, root=root_num, destiny=destiny_num), unsafe_allow_html=True)
                                     
                                     # Generate observation card
-                                    obs = pred_engine.generate_monthly_observation(active_maha, active_antar, p_planet, praty_counts, root_num, destiny_num)
-                                    m_status = pred_engine.get_planet_status(active_maha, destiny_num, praty_counts)
-                                    a_status = pred_engine.get_planet_status(active_antar, destiny_num, praty_counts)
-                                    p_status = pred_engine.get_planet_status(p_planet, destiny_num, praty_counts)
+                                    obs = pred_engine.generate_monthly_observation(active_maha, active_antar, p_planet, praty_counts, root_num, destiny_num, natal_counts)
+                                    m_status = pred_engine.get_planet_status(active_maha, destiny_num, praty_counts, natal_counts)
+                                    a_status = pred_engine.get_planet_status(active_antar, destiny_num, praty_counts, natal_counts)
+                                    p_status = pred_engine.get_planet_status(p_planet, destiny_num, praty_counts, natal_counts)
                                     
+                                    def _is_pos(s): return s in ["Positive", "Super Positive"]
                                     syn_label = "Mixed Phase"
                                     syn_color = "#d97706" # Orange
-                                    if m_status == "Positive" and a_status == "Positive" and p_status == "Positive":
-                                        syn_label = "Golden Month (Triple Positive Synergy)"
+                                    if _is_pos(m_status) and _is_pos(a_status) and _is_pos(p_status):
+                                        has_sp = any(x == "Super Positive" for x in [m_status, a_status, p_status])
+                                        syn_label = "Golden Month (Triple Positive Synergy)" + (" - Super Positive 1 Active!" if has_sp else "")
                                         syn_color = "#16a34a" # Green
                                     elif m_status == "Negative" and a_status == "Negative" and p_status == "Negative":
                                         syn_label = "Caution Month (Triple Negative Synergy)"
